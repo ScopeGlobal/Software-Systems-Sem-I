@@ -23,9 +23,9 @@ int main(void) {
 	printf("We are about to enter the critical section \n");
 	fcntl(fd, F_SETLKW, &lock);
 	printf("Current ticket no is %d \n", data.ticket_no);
-	data.ticket_no++;
 	lseek(fd, 0L, SEEK_SET);
 	printf("We are now inside the critical section! \n");
+	data.ticket_no++;
 	write(fd, &data, sizeof(data));
 	printf("Press any key to unlock!\n");
 	getchar();
