@@ -9,7 +9,7 @@ int main(void) {
 	} data;
 	
 	struct flock lock;
-	int fd = open("ticket.txt", O_CREAT|O_RDWR);
+	int fd = open("tickets.txt", O_RDWR);
 	if (fd < 0) {
 		perror("File opening failed ");
 	}
@@ -26,6 +26,7 @@ int main(void) {
 	data.ticket_no++;
 	lseek(fd, 0L, SEEK_SET);
 	printf("We are now inside the critical section! \n");
+	write(fd, &data, sizeof(data));
 	printf("Press any key to unlock!\n");
 	getchar();
 	lock.l_type = F_UNLCK;
