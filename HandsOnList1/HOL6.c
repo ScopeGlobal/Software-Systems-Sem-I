@@ -1,4 +1,11 @@
-// write a program to accept from STDIN and print to STDOUT. Use write and read only
+/*
+============================================================================
+Name : HOL6.c
+Author : Sridhar Menon
+Description : write a program to accept from STDIN and print to STDOUT. Use write and read only
+Date: 18th Aug, 2023.
+============================================================================
+*/
 
 #include<unistd.h>
 #include<stdio.h>

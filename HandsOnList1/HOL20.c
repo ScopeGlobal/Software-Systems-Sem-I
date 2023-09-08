@@ -1,3 +1,12 @@
+/*
+============================================================================
+Name : HOL20.c
+Author : Sridhar Menon
+Description :  Find out the priority of your running program. Modify the priority with nice command.
+Date: 25th Aug, 2023.
+============================================================================
+*/
+
 #include<sys/time.h>
 #include<sys/resource.h>
 #include<stdio.h>

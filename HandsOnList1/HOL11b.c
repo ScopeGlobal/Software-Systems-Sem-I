@@ -1,4 +1,13 @@
-// duplicate file descriptor using dup
+/*
+============================================================================
+Name : HOL11b.c
+Author : Sridhar Menon
+Description :  Write a program to open a file, duplicate the file descriptor and append the file with both the 
+descriptors and check whether the file is updated properly or not.
+b. use dup2
+Date: 24th Aug, 2023.
+============================================================================
+*/
 
 #include<unistd.h>
 #include<stdio.h>

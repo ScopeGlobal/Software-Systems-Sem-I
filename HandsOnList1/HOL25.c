@@ -1,3 +1,13 @@
+/*
+============================================================================
+Name : HOL25.c
+Author : Sridhar Menon
+Description : Write a program to create three child processes. The parent should wait for a particular child (use 
+waitpid system call).
+Date: 5th September, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<unistd.h>
 #include<fcntl.h>

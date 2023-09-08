@@ -1,4 +1,11 @@
-// write a program to open an existing file in Read/Write mode. Try O_EXCL flag also
+/*
+============================================================================
+Name : HOL4.c
+Author : Sridhar Menon
+Description : Write a program to open an existing file with read write mode. Try O_EXCL flag also.
+Date: 17th Aug, 2023.
+============================================================================
+*/
 
 #include<stdio.h>
 #include<unistd.h>

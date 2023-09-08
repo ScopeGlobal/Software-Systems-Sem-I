@@ -1,3 +1,13 @@
+/*
+============================================================================
+Name : HOL13.c
+Author : Sridhar Menon
+Description :  Write a program to wait for a STDIN for 10 seconds using select. Write a proper print statement to 
+verify whether the data is available within 10 seconds or not (check in $man 2 select)
+Date: 24th Aug, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<fcntl.h>

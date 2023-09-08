@@ -1,3 +1,13 @@
+/*
+============================================================================
+Name : HOL29.c
+Author : Sridhar Menon
+Description : Write a program to get scheduling policy and modify the scheduling policy (SCHED_FIFO, 
+SCHED_RR).
+Date: 5th September, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>

@@ -1,5 +1,16 @@
 // duplicate file descriptor using dup
 
+/*
+============================================================================
+Name : HOL11c.c
+Author : Sridhar Menon
+Description : Write a program to open a file, duplicate the file descriptor and append the file with both the 
+descriptors and check whether the file is updated properly or not.
+ c. use fcntl
+Date: 24th Aug, 2023.
+============================================================================
+*/
+
 #include<unistd.h>
 #include<stdio.h>
 #include<fcntl.h>

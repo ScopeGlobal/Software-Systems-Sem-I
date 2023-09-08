@@ -1,4 +1,11 @@
-// write a program to determine the opening mode of a file using fcntl
+/*
+============================================================================
+Name : HOL12.c
+Author : Sridhar Menon
+Description : write a program to determine the opening mode of a file using fcntl
+Date: 24th Aug, 2023.
+============================================================================
+*/
 
 #include<unistd.h>
 #include<fcntl.h>

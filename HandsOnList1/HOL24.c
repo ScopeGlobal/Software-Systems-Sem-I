@@ -1,3 +1,12 @@
+/*
+============================================================================
+Name : HOL24.c
+Author : Sridhar Menon
+Description : Write a program to create an orphan process.
+Date: 5th September, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<unistd.h>
 #include<fcntl.h>

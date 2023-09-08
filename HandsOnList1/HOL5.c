@@ -1,4 +1,11 @@
-// write a program to create 5 new files with infinite loop. Execute program in background and check the file descriptor table
+/*
+============================================================================
+Name : HOL5.c
+Author : Sridhar Menon
+Description : write a program to create 5 new files with infinite loop. Execute program in background and check the file descriptor table
+Date: 17th Aug, 2023.
+============================================================================
+*/
 
 #include<stdio.h>
 #include<unistd.h>

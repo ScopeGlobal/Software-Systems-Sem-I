@@ -1,3 +1,13 @@
+/*
+============================================================================
+Name : HOL16a.c
+Author : Sridhar Menon
+Description : Write a program to perform mandatory locking.
+ a. Implement write lock
+Date: 24th Aug, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<fcntl.h>
