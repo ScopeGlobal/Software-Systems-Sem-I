@@ -23,16 +23,11 @@ int main(void) {
 	getchar();
 	
 	int new_priority;
-	printf("Enter new priority- ");
+	printf("Enter new Nice value- ");
 	scanf("%d", &new_priority);
 	
-	int set_status = setpriority(PRIO_PROCESS, pid, new_priority);
-	
-	if (set_status < 0) {
-		perror("Set Priority Failed ");
-		return -1;
-	}
-	printf("New Priority: %d \n", getpriority(PRIO_PROCESS, pid));
+	nice(new_priority);
+	printf("New Nice value: %d \n", nice(0));
 	getchar();
 	return 0;
 
