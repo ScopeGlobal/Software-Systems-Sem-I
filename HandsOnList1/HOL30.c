@@ -12,6 +12,10 @@ Date: 5th September, 2023.
 #include<unistd.h>
 #include<sys/stat.h>
 #include<sys/types.h>
+#include<time.h>
+time_t rawtime;
+
+struct tm* timeinfo;
 
 int init_daemon(void) {
 
@@ -19,10 +23,20 @@ int init_daemon(void) {
 		setsid();
 		chdir("/");
 		umask(0);
-		printf("%d \n", getpid());
-		getchar();
+		printf("Daemon Process says- ");
+		printf("CPID: %d", getpid());
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+		while (timeinfo->tm_hour <= 11 && timeinfo->tm_min < 9) {
+			time(&rawtime);
+			timeinfo = localtime(&rawtime);
+		}
+		if (timeinfo->tm_hour == 11 && timeinfo->tm_min == 9) {
+			system("echo HI");
+		}
 		return 0;
 	} else {
+		
 		exit(0);
 	}
 }
