@@ -96,6 +96,7 @@ int main(void) {
 					while(getchar() != '\n');
 					printf("Enter Student Name- ");
 					scanf("%[^\n]", student.stud_name);
+					while(getchar() != '\n');
 					printf("Enter Student Email- ");
 					scanf("%[^\n]", student.email);
 					student.num_courses = 0;
@@ -138,6 +139,7 @@ int main(void) {
 					while(getchar() != '\n');
 					printf("Enter Faculty Name- ");
 					scanf("%[^\n]", faculty.fac_name);
+					while(getchar() != '\n');
 					printf("Enter Faculty Email- ");
 					scanf("%[^\n]", faculty.email);
 					faculty.num_courses = 0;
@@ -215,9 +217,11 @@ int main(void) {
 					}
 					char updated[80];
 					if (stud_update_choice == 1) {
+						while(getchar() != '\n');
 						printf("Enter updated name- ");
 						scanf("%[^\n]", updated);
 					} else if (stud_update_choice == 2) {
+						while(getchar() != '\n');
 						printf("Enter updated email- ");
 						scanf("%[^\n]", updated);
 					} else {
@@ -269,9 +273,11 @@ int main(void) {
 					char updated_fac[80];
 					if (fac_update_choice == 1) {
 						printf("Enter updated name- ");
+						while(getchar()!= '\n');
 						scanf("%[^\n]", updated_fac);
 					} else if (fac_update_choice == 2) {
 						printf("Enter updated email- ");
+						while(getchar()!='\n');
 						scanf("%[^\n]", updated_fac);
 					} else {
 						continue;

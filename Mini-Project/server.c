@@ -2,10 +2,184 @@
 #include<stdio.h>
 #include<unistd.h>
 #include<string.h>
+#include<fcntl.h>
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include<arpa/inet.h>
+
+struct Student {
+	int stud_id;
+	char stud_name[80];
+	int num_courses;
+	int courses[80];
+	char password[80];
+	char email[80];
+	int activity_stat;
+};
+
+struct Faculty {
+	int fac_id;
+	char fac_name[80];
+	char email[80];
+	char password[80];
+	int num_courses;
+	int courses[80];
+};
+
+int add_student(struct Student student) {
+
+	int fd = open("student.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	int end_file = 0;
+	while (1) {
+		struct Student temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			break;
+		} else if (temp.stud_id == student.stud_id) {
+			return -1;
+		}
+	}
+	
+	int write_stat = write(fd, &student, sizeof(student));
+	if (write_stat < 0) {
+		return -1;
+	} else {
+		return 1;
+	}
+	
+}
+
+int add_faculty(struct Faculty faculty) {
+
+	int fd = open("faculty.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	int end_file = 0;
+	while (1) {
+		struct Faculty temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			break;
+		} else if (temp.fac_id == faculty.fac_id) {
+			return -1;
+		}
+	}
+	
+	int write_stat = write(fd, &faculty, sizeof(faculty));
+	if (write_stat < 0) {
+		return -1;
+	} else {
+		return 1;
+	}
+
+}
+
+int act_deact(int activate_id) {
+
+	int fd = open("student.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	int end_file = 0;
+	int act_deact_stat;
+	while (1) {
+		struct Student temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			return -1;
+		} else if (temp.stud_id == activate_id) {
+			if (temp.activity_stat == 0) {
+				temp.activity_stat = 1;
+				act_deact_stat = 1;
+			} else {
+				temp.activity_stat = 0;
+				act_deact_stat = 0;
+			}
+			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
+			int write_stat = write(fd, &temp, sizeof(temp));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return -1;
+			}
+			break;
+		}
+	}	
+	
+	return act_deact_stat;
+
+}
+
+int stud_update(char *updated, int stud_update_choice, int student_id) {
+
+	int fd = open("student.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	while (1) {
+		struct Student temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			return -1;
+		} else if (temp.stud_id == student_id) {
+			if (stud_update_choice == 1) {
+				strcpy(temp.stud_name, updated);
+			} else {
+				strcpy(temp.email, updated);
+			}
+			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
+			int write_stat = write(fd, &temp, sizeof(temp));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return -1;
+			}
+			break;
+		}
+	}	
+	
+	return 1;
+
+}
+
+int fac_update(char *updated, int fac_update_choice, int fac_id) {
+
+	int fd = open("faculty.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	while (1) {
+		struct Faculty temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			return -1;
+		} else if (temp.fac_id == fac_id) {
+			if (fac_update_choice == 1) {
+				strcpy(temp.fac_name, updated);
+			} else {
+				strcpy(temp.email, updated);
+			}
+			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
+			int write_stat = write(fd, &temp, sizeof(temp));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return -1;
+			}
+			break;
+		}
+	}	
+	
+	return 1;
+
+}
 
 int main(void) {
 
@@ -79,15 +253,7 @@ int main(void) {
 				}	
 				
 				if (admin_choice == 1) {
-					struct {
-						int stud_id;
-						char stud_name[80];
-						int num_courses;
-						int courses[80];
-						char password[80];
-						char email[80];
-						int activity_stat;
-					} student;
+					struct Student student;
 					rec_stat = recv(client, &student, sizeof(student), 0);
 					if (rec_stat < 0) {
 						perror("Receiving Failed");
@@ -97,8 +263,8 @@ int main(void) {
 					printf("Student Name %s \n", student.stud_name);
 					printf("Student Email %s \n", student.email);
 					
-					int add_stat = 1;
-
+					int add_stat = add_student(student);
+					
 					send_stat = send(client, &add_stat, sizeof(add_stat), 0);
 					if (send_stat < 0) {
 						perror("Sending Failed");
@@ -106,14 +272,7 @@ int main(void) {
 					}
 					
 				} else if (admin_choice == 2) {
-					struct {
-						int fac_id;
-						char fac_name[80];
-						char email[80];
-						char password[80];
-						int num_courses;
-						int courses[80];
-					} faculty;
+					struct Faculty faculty;
 					rec_stat = recv(client, &faculty, sizeof(faculty), 0);
 					if (rec_stat < 0) {
 						perror("Receiving Failed");
@@ -124,7 +283,7 @@ int main(void) {
 					printf("Faculty Name %s \n", faculty.fac_name);
 					printf("Faculty Email %s \n", faculty.email);
 					
-					int add_stat = 1;
+					int add_stat = add_faculty(faculty);
 
 					send_stat = send(client, &add_stat, sizeof(add_stat), 0);
 					if (send_stat < 0) {
@@ -143,7 +302,7 @@ int main(void) {
 					
 					printf("Student ID to be Activated/Deactivated- %d \n", activate_id);
 					
-					int act_stat = 1;
+					int act_stat = act_deact(activate_id);
 
 					send_stat = send(client, &act_stat, sizeof(act_stat), 0);
 					if (send_stat < 0) {
@@ -184,7 +343,7 @@ int main(void) {
 						continue;
 					}
 					
-					int stud_upd_stat = 1;
+					int stud_upd_stat = stud_update(updated, stud_update_choice, student_id);
 					send_stat = send(client, &stud_upd_stat, sizeof(stud_upd_stat), 0);
 					if (send_stat < 0) {
 						perror("Sending Failed");
@@ -225,7 +384,7 @@ int main(void) {
 						continue;
 					}
 					
-					int fac_upd_stat = 1;
+					int fac_upd_stat = fac_update(updated_fac, fac_update_choice, fac_id);
 					send_stat = send(client, &fac_upd_stat, sizeof(fac_upd_stat), 0);
 					if (send_stat < 0) {
 						perror("Sending Failed");
