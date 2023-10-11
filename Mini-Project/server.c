@@ -27,6 +27,14 @@ struct Faculty {
 	int courses[80];
 };
 
+struct Course {
+	int course_id;
+	char course_name[80];
+	int enroll_count;
+	int enrolled[150];
+	int course_status;
+};
+
 int add_student(struct Student student) {
 
 	int fd = open("student.txt", O_RDWR);
@@ -73,6 +81,33 @@ int add_faculty(struct Faculty faculty) {
 	}
 	
 	int write_stat = write(fd, &faculty, sizeof(faculty));
+	if (write_stat < 0) {
+		return -1;
+	} else {
+		return 1;
+	}
+
+}
+
+int add_course(struct Course course) {
+
+	int fd = open("course.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	int end_file = 0;
+	while (1) {
+		struct Course temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			break;
+		} else if (temp.course_id == course.course_id) {
+			return -1;
+		}
+	}
+	
+	int write_stat = write(fd, &course, sizeof(course));
 	if (write_stat < 0) {
 		return -1;
 	} else {
@@ -180,6 +215,186 @@ int fac_update(char *updated, int fac_update_choice, int fac_id) {
 	return 1;
 
 }
+
+void unenroll_from_course(int student_id, int course_id) {
+	
+	int fd = open("student.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return;
+	}
+	while (1) {
+		struct Student temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			return;
+		} else if (temp.stud_id == student_id) {
+			for (int i = 0; i < temp.num_courses; i++) {
+				if (temp.courses[i] == course_id) {
+					int tempo = temp.courses[i];
+					temp.courses[i] = temp.courses[temp.num_courses - 1];
+					temp.courses[temp.num_courses - 1] = tempo;
+					temp.courses[temp.num_courses - 1] = -1;
+					temp.num_courses--;
+					break;
+				}
+			}
+			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
+						
+			int write_stat = write(fd, &temp, sizeof(temp));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return;
+			}
+			break;
+		}
+	}	
+	
+	return;
+	
+}
+
+int unlist_course(int fac_id, int course_id) {
+	
+	int fd = open("faculty.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	while (1) {
+		struct Faculty temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			return -1;
+		} else if (temp.fac_id == fac_id) {
+			for (int i = 0; i < temp.num_courses; i++) {
+				if (temp.courses[i] == course_id) {
+					int tempo = temp.courses[i];
+					temp.courses[i] = temp.courses[temp.num_courses - 1];
+					temp.courses[temp.num_courses - 1] = tempo;
+					temp.courses[temp.num_courses - 1] = -1;
+					temp.num_courses--;
+					break;
+				}
+			}
+			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
+						
+			int write_stat = write(fd, &temp, sizeof(temp));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return -1;
+			}
+			break;
+		}
+	}	
+	
+	return 1;
+	
+}
+
+
+
+void increment_fac_courses(int fac_id) {
+	
+	int fd = open("faculty.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return;
+	}
+	while (1) {
+		struct Faculty temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			return;
+		} else if (temp.fac_id == fac_id) {
+			temp.num_courses++;
+			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
+						
+			int write_stat = write(fd, &temp, sizeof(temp));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return;
+			}
+			break;
+		}
+	}	
+	
+	return;
+}
+
+int del_course(int course_id) {
+	
+	int fd = open("course.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}	
+	
+	while(1) {
+		struct Course temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			return -1;
+		} else if (temp.course_id == course_id) {
+			temp.course_status = 0;
+			for(int j = 0; j < temp.enroll_count; j++) {
+				unenroll_from_course(temp.enrolled[j], course_id);
+				temp.enrolled[j] = -1;
+			}
+			
+			temp.enroll_count = 0;
+			
+			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
+			
+			int write_stat = write(fd, &temp, sizeof(temp));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return -1;
+			}
+			break;
+		}
+	}
+	
+	close(fd);
+	
+	int fd2 = open("faculty.txt", O_RDWR);
+	if (fd2 < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	
+	while(1) {
+		struct Faculty fac;
+		int read_stat = read(fd, &fac, sizeof(fac));
+		if (read_stat == 0) {
+			return -1;
+		} else {
+			for(int i = 0; i < fac.num_courses; i++) {
+				if (fac.courses[i] == course_id) {
+					int tempo = fac.courses[i];
+					fac.courses[i] = fac.courses[fac.num_courses - 1];
+					fac.courses[fac.num_courses - 1] = tempo;
+					fac.courses[fac.num_courses - 1] = -1;
+					fac.num_courses--;
+					
+					lseek(fd, -1 * (sizeof(fac)), SEEK_CUR);
+					
+					int write_stat = write(fd, &fac, sizeof(fac));
+					if (write_stat < 0) {
+						perror("Writing Failed");
+						return -1;
+					}
+					break;
+				}
+			}
+			
+			
+		}
+	}
+	
+	return 1;
+}
+
 
 int main(void) {
 
@@ -408,12 +623,7 @@ int main(void) {
 				}
 				
 				if (fac_choice == 1) {
-					struct {
-						int course_id;
-						char course_name[80];
-						int enroll_count;
-						int enrolled[150];
-					} course;
+					struct Course course;
 					rec_stat = recv(client, &course, sizeof(course), 0);
 					if (rec_stat < 0) {
 						perror("Receiving Failed");
@@ -423,7 +633,7 @@ int main(void) {
 					printf("Course ID- %d \n", course.course_id);
 					printf("Course Name- %s \n", course.course_name);
 
-					int cadd_stat = 1;
+					int cadd_stat = add_course(course);
 					send_stat = send(client, &cadd_stat, sizeof(cadd_stat), 0);
 					if (send_stat < 0) {
 						perror("Sending Failed");
@@ -438,7 +648,7 @@ int main(void) {
 						return -1;
 					}
 					
-					int cdel_stat = 1;
+					int cdel_stat = del_course(del_id);
 					send_stat = send(client, &cdel_stat, sizeof(cdel_stat), 0);
 					if (send_stat < 0) {
 						perror("Sending Failed");
@@ -453,10 +663,26 @@ int main(void) {
 						return -1;
 					}					
 					
+					int fd = open("course.txt", O_RDWR);
+					if (fd < 0) {
+						perror("Opening Failed");
+						return -1;
+					}
 					int enrollees[150];
-					enrollees[0] = 4;
-					for (int i = 1; i < 150; i++) {
+					for (int i = 0; i < 150; i++) {
 						enrollees[i] = -1;
+					}
+					while (1) {
+						struct Course temp;
+						int read_stat = read(fd, &temp, sizeof(temp));
+						if (read_stat == 0) {
+							break;
+						} else if (temp.course_id == co_id) {
+							for (int k = 0; k < 150; k++) {
+								enrollees[k] = temp.enrolled[k];
+							}
+							break;
+						}
 					}
 					
 					send_stat = send(client, enrollees, sizeof(enrollees), 0);

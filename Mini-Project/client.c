@@ -334,6 +334,7 @@ int main(void) {
 						char course_name[80];
 						int enroll_count;
 						int enrolled[150];
+						int course_status;
 					} course;
 					
 					printf("Enter Course ID- ");
@@ -345,6 +346,7 @@ int main(void) {
 					for (int i = 0; i < 150; i++) {
 						course.enrolled[i] = -1;
 					}
+					course.course_status = 1;
 					
 					send_stat = send(client, &course, sizeof(course), 0);
 					if (send_stat < 0) {
