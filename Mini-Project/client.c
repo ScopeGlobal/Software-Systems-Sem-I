@@ -28,7 +28,11 @@ int main(void) {
 		perror("Connection Failed");
 		return -1;
 	}
-	
+	struct {
+		int choice;
+		int userid;
+		char password[80];
+	} login_token;
 	char choice[3];
 	int admin_choice, student_choice, faculty_choice;
 	
@@ -39,14 +43,16 @@ int main(void) {
 	printf("4. Faculty Login \n");
 	printf("5. Admin Login \n");
 	printf("Enter Choice- ");
-	scanf("%s", &choice[0]);
-	printf("\nEnter Username- ");
-	scanf("%s", &choice[1]);
+	scanf("%d", &login_token.choice);
+	while(getchar()!='\n');
+	printf("\nEnter User ID- ");
+	scanf("%d", &login_token.userid);
 	printf("\n Enter Password- ");
-	scanf("%s", &choice[2]);
+	while(getchar()!='\n');
+	scanf("%[^\n]", login_token.password);
 	printf("\n");
 	
-	int send_stat = send(client, choice, sizeof(choice), 0);
+	int send_stat = send(client, &login_token, sizeof(login_token), 0);
 	if (send_stat < 0) {
 		perror("Sending Failed");
 		return -1;

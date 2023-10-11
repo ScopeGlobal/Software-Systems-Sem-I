@@ -27,6 +27,13 @@ struct Faculty {
 	int courses[80];
 };
 
+struct Admin {
+	int userid;
+	char username[80];
+	char email[80];
+	char password[80];
+};
+
 struct Course {
 	int course_id;
 	char course_name[80];
@@ -34,6 +41,71 @@ struct Course {
 	int enrolled[150];
 	int course_status;
 };
+
+struct LoginToken {
+	int choice;
+	int userid;
+	char password[80];
+};
+
+char login(struct LoginToken login_token) {
+	
+	if (login_token.choice == 3) {
+		int fd = open("student.txt", O_RDWR);
+		if (fd < 0) {
+			perror("Opening Failed");
+			return 'x';
+		}
+		
+		while(1) {
+			struct Student temp;
+			int read_stat = read(fd, &temp, sizeof(temp));
+			if (read_stat == 0) {
+				return 'x';
+			}
+			if (temp.stud_id == login_token.userid && strcmp(temp.password, login_token.password)) {
+				return 's';
+			}
+		}
+	} else if (login_token.choice == 4) {
+		int fd2 = open("faculty.txt", O_RDWR);
+		if (fd2 < 0) {
+			perror("Opening Failed");
+			return 'x';
+		}
+		
+		while(1) {
+			struct Faculty temp;
+			int read_stat = read(fd2, &temp, sizeof(temp));
+			if (read_stat == 0) {
+				return 'x';
+			}
+			if (temp.fac_id == login_token.userid && strcmp(temp.password, login_token.password)) {
+				return 'f';
+			}
+		}
+	} else if (login_token.choice == 5) {
+		int fd3 = open("admin.txt", O_RDWR);
+		if (fd3 < 0) {
+			perror("Opening Failed");
+			return 'x';
+		}
+		
+		while (1) {
+			struct Admin temp;
+			int read_stat = read(fd3, &temp, sizeof(temp));
+			if (read_stat == 0) {
+				return 'x';
+			}
+			if (temp.userid == login_token.userid && strcmp(temp.password, login_token.password)) {
+				return 'a';
+			}
+		}
+	} else {
+		return 'x';
+	}
+	
+}
 
 int add_student(struct Student student) {
 
@@ -395,6 +467,35 @@ int del_course(int course_id) {
 	return 1;
 }
 
+int change_fac_password(int fac_id, char* new_pass) {
+	int fd = open("faculty.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	
+	while (1) {
+		struct Faculty temp;
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			return -1;
+			
+		}
+		if (temp.fac_id == fac_id) {
+			strcpy(temp.password, new_pass);
+			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
+			int write_stat = write(fd, &temp, sizeof(temp));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return -1;
+			}
+			break;
+		}
+	}
+	
+	return 1;
+}
+
 
 int main(void) {
 
@@ -433,22 +534,15 @@ int main(void) {
 		return -1;
 	}
 
-	char choice[3];
-	int rec_stat = recv(client, choice, sizeof(choice), 0);
+	struct LoginToken login_token;
+	int rec_stat = recv(client, &login_token, sizeof(login_token), 0);
 	if (rec_stat < 0) {
 		perror("Receiving Failed");
 		return -1;
 	}
-	char role;
-	if (choice[0] == '3') {
-		role = 's';
-	} else if (choice[0] == '4') {
-		role = 'f';
-	} else if (choice[0] == '5') {
-		role = 'a';
-	} else {
-		role = 'x';
-	}
+	
+	
+	char role = login(login_token);
 
 	int send_stat = send(client, &role, sizeof(role), 0);
 	if (send_stat < 0) {
@@ -699,7 +793,7 @@ int main(void) {
 						return -1;
 					}				
 					
-					int pass_stat = 1;
+					int pass_stat = change_fac_password(login_token.userid, new_pass);
 					send_stat = send(client, &pass_stat, sizeof(pass_stat), 0);
 					if (send_stat < 0) {
 						perror("Sending Failed");
