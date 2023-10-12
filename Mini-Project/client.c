@@ -324,7 +324,8 @@ int main(void) {
 				printf("2. Remove Course \n");
 				printf("3. View Enrollments in Courses \n");
 				printf("4. Change Password \n");
-				printf("5. Exit \n");
+				printf("5. Update Course Details \n");
+				printf("6. Exit \n");
 				printf("Enter your choice- ");
 				scanf("%d", &fac_choice);
 				
@@ -338,6 +339,7 @@ int main(void) {
 					struct {
 						int course_id;
 						char course_name[80];
+						int intake;
 						int enroll_count;
 						int enrolled[150];
 						int course_status;
@@ -348,6 +350,9 @@ int main(void) {
 					while(getchar() != '\n');
 					printf("Enter Course Name- ");
 					scanf("%[^\n]", course.course_name);
+					while(getchar()!='\n');
+					printf("Enter Course Intake- ");
+					scanf("%d", &course.intake);
 					course.enroll_count = 0;
 					for (int i = 0; i < 150; i++) {
 						course.enrolled[i] = -1;
@@ -453,6 +458,67 @@ int main(void) {
 					}
 					else {
 						printf("Password Changed Successfully! \n");
+					}
+					
+				} else if (fac_choice == 5) {
+					int course_id;
+					printf("Enter the ID of the Course to be updated- ");
+					scanf("%d", &course_id);
+					send_stat = send(client, &course_id, sizeof(course_id), 0);
+					if (send_stat < 0) {
+						perror("Sending Failed");
+						return -1;
+					}
+					
+					int course_update_choice;
+					
+					printf("UPDATE MENU \n");
+					printf("1. Update Name \n");
+					printf("2. Update Intake \n");
+					printf("3. Exit Menu \n");
+					printf("Enter your choice- ");
+					scanf("%d", &course_update_choice);
+					send_stat = send(client, &course_update_choice, sizeof(course_update_choice), 0);
+					if (send_stat < 0) {
+						perror("Sending Failed");
+						return -1;
+					}
+					char updated_course[80];
+					if (course_update_choice == 1) {
+						printf("Enter updated name- ");
+						while(getchar()!= '\n');
+						scanf("%[^\n]", updated_course);
+						send_stat = send(client, updated_course, sizeof(updated_course), 0);
+						if (send_stat < 0) {
+							perror("Sending Failed");
+							return -1;
+						}
+					} else if (course_update_choice == 2) {
+						int updated_intake;
+						printf("Enter updated Intake- ");
+						while(getchar()!='\n');
+						scanf("%d", &updated_intake);
+						send_stat = send(client, &updated_intake, sizeof(updated_intake), 0);
+						if (send_stat < 0) {
+							perror("Sending Failed");
+							return -1;
+						}
+					} else {
+						continue;
+					}
+						
+					
+					int course_upd_stat;
+					rec_stat = recv(client, &course_upd_stat, sizeof(course_upd_stat), 0);
+					if (rec_stat < 0) {
+						perror("Receiving Failed");
+						return -1;
+					}
+					
+					if (course_upd_stat < 0) {
+						printf("Course Update Failed \n");
+					} else {
+						printf("Course Update Successful! \n");
 					}
 					
 				} else {
