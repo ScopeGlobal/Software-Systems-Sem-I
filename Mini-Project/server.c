@@ -49,6 +49,23 @@ struct LoginToken {
 	char password[80];
 };
 
+void setlock(struct flock lock, int fd, int l_type, int l_whence, int l_start, int l_length) {
+	if (l_type == F_UNLCK)
+	{
+		fcntl(fd, F_SETLKW, &lock);		
+	} else {
+	
+		lock.l_type = l_type;
+		lock.l_whence = l_whence;
+		lock.l_start = l_start;
+		lock.l_len = l_length;
+		lock.l_pid = getpid();
+
+		fcntl(fd, F_SETLKW, &lock);
+	}
+
+}
+
 char login(struct LoginToken login_token) {
 	
 	if (login_token.choice == 3) {
@@ -59,14 +76,20 @@ char login(struct LoginToken login_token) {
 		}
 		
 		while(1) {
+
 			struct Student temp;
+			struct flock lock;
+			setlock(lock, fd, F_RDLCK, SEEK_CUR, 0, sizeof(temp));
 			int read_stat = read(fd, &temp, sizeof(temp));
 			if (read_stat == 0) {
+				setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 				return 'x';
 			}
 			if (temp.stud_id == login_token.userid && strcmp(temp.password, login_token.password) == 0) {
+				setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 				return 's';
 			}
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 		}
 	} else if (login_token.choice == 4) {
 		int fd2 = open("faculty.txt", O_RDWR);
@@ -76,14 +99,19 @@ char login(struct LoginToken login_token) {
 		}
 		
 		while(1) {
+			struct flock lock;
 			struct Faculty temp;
+			setlock(lock, fd2, F_RDLCK, SEEK_CUR, 0, sizeof(temp));
 			int read_stat = read(fd2, &temp, sizeof(temp));
 			if (read_stat == 0) {
+				setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 				return 'x';
 			}
 			if (temp.fac_id == login_token.userid && strcmp(temp.password, login_token.password) == 0) {
+				setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 				return 'f';
 			}
+			setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 		}
 	} else if (login_token.choice == 5) {
 		int fd3 = open("admin.txt", O_RDWR);
@@ -93,14 +121,19 @@ char login(struct LoginToken login_token) {
 		}
 		
 		while (1) {
+			struct flock lock;
 			struct Admin temp;
+			setlock(lock, fd3, F_RDLCK, SEEK_CUR, 0, sizeof(temp));
 			int read_stat = read(fd3, &temp, sizeof(temp));
 			if (read_stat == 0) {
+				setlock(lock, fd3, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 				return 'x';
 			}
 			if (temp.userid == login_token.userid && strcmp(temp.password, login_token.password) == 0) {
+				setlock(lock, fd3, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 				return 'a';
 			}
+			setlock(lock, fd3, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 		}
 	} else {
 		return 'x';
@@ -116,20 +149,26 @@ int add_student(struct Student student) {
 		return -1;
 	}
 	int end_file = 0;
+	struct flock lock;
 	while (1) {
 		struct Student temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
 			break;
 		} else if (temp.stud_id == student.stud_id) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 	
 	int write_stat = write(fd, &student, sizeof(student));
 	if (write_stat < 0) {
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(student));
 		return -1;
 	} else {
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(student));
 		return 1;
 	}
 	
@@ -143,17 +182,22 @@ int add_faculty(struct Faculty faculty) {
 		return -1;
 	}
 	int end_file = 0;
+	struct flock lock;
 	while (1) {
 		struct Faculty temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
 			break;
 		} else if (temp.fac_id == faculty.fac_id) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 	
 	int write_stat = write(fd, &faculty, sizeof(faculty));
+	setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(faculty));
 	if (write_stat < 0) {
 		return -1;
 	} else {
@@ -170,17 +214,22 @@ int add_course(int fac_id, struct Course course) {
 		return -1;
 	}
 	int end_file = 0;
+	struct flock lock;
 	while (1) {
 		struct Course temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
 			break;
 		} else if (temp.course_id == course.course_id) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 	
 	int write_stat = write(fd, &course, sizeof(course));
+	setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
 	if (write_stat < 0) {
 		return -1;
 	} 
@@ -193,8 +242,10 @@ int add_course(int fac_id, struct Course course) {
 
 	while (1) {
 		struct Faculty faculty;
+		setlock(lock, fd2, F_WRLCK, SEEK_CUR, 0, sizeof(faculty));
 		int read_stat = read(fd2, &faculty, sizeof(faculty));
 		if (read_stat == 0) {
+			setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(faculty));
 			return -1;
 		} else if (faculty.fac_id == fac_id) {
 			faculty.courses[faculty.num_courses] = course.course_id;
@@ -202,11 +253,13 @@ int add_course(int fac_id, struct Course course) {
 
 			lseek(fd2, -1 * sizeof(faculty), SEEK_CUR);
 			int write_stat = write(fd2, &faculty, sizeof(faculty));
+			setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(faculty));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 			}
 			break;
 		}
+		setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(faculty));
 	}
 
 	return 1;
@@ -221,10 +274,13 @@ int act_deact(int activate_id) {
 	}
 	int end_file = 0;
 	int act_deact_stat;
+	struct flock lock;
 	while (1) {
 		struct Student temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.stud_id == activate_id) {
 			if (temp.activity_stat == 0) {
@@ -236,12 +292,14 @@ int act_deact(int activate_id) {
 			}
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}	
 	
 	return act_deact_stat;
@@ -255,10 +313,13 @@ int stud_update(char *updated, int stud_update_choice, int student_id) {
 		perror("Opening Failed");
 		return -1;
 	}
+	struct flock lock;
 	while (1) {
 		struct Student temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.stud_id == student_id) {
 			if (stud_update_choice == 1) {
@@ -268,12 +329,14 @@ int stud_update(char *updated, int stud_update_choice, int student_id) {
 			}
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}	
 	
 	return 1;
@@ -287,10 +350,13 @@ int fac_update(char *updated, int fac_update_choice, int fac_id) {
 		perror("Opening Failed");
 		return -1;
 	}
+	struct flock lock;
 	while (1) {
 		struct Faculty temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.fac_id == fac_id) {
 			if (fac_update_choice == 1) {
@@ -300,12 +366,14 @@ int fac_update(char *updated, int fac_update_choice, int fac_id) {
 			}
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}	
 	
 	return 1;
@@ -319,11 +387,13 @@ int enroll_for_course(int student_id, int course_id) {
 		perror("Opening Failed");
 		return -1;
 	}
-
+	struct flock lock;
 	while (1) {
 		struct Course temp;
+		setlock(lock, fd2, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd2, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.course_id == course_id) {
 			if (temp.enroll_count == temp.intake) {
@@ -333,11 +403,14 @@ int enroll_for_course(int student_id, int course_id) {
 			temp.enroll_count++;
 			lseek(fd2, -1 * sizeof(temp), SEEK_CUR);
 			int write_stat = write(fd2, &temp, sizeof(temp));
+			setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
+			break;
 		}
+		setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 
 	close(fd2);
@@ -349,8 +422,10 @@ int enroll_for_course(int student_id, int course_id) {
 	}
 	while (1) {
 		struct Student temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.stud_id == student_id) {
 			temp.courses[temp.num_courses] = course_id;
@@ -358,12 +433,14 @@ int enroll_for_course(int student_id, int course_id) {
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 						
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 
 	close(fd);
@@ -378,10 +455,13 @@ int unenroll_from_course(int student_id, int course_id) {
 		perror("Opening Failed");
 		return -1;
 	}
+	struct flock lock;
 	while (1) {
 		struct Student temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.stud_id == student_id) {
 			for (int i = 0; i < temp.num_courses; i++) {
@@ -397,12 +477,14 @@ int unenroll_from_course(int student_id, int course_id) {
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 						
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 
 	int fd2 = open("course.txt", O_RDWR);
@@ -413,8 +495,10 @@ int unenroll_from_course(int student_id, int course_id) {
 
 	while (1) {
 		struct Course temp;
+		setlock(lock, fd2, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.course_id == course_id) {
 			for (int i = 0; i < temp.enroll_count; i++)
@@ -430,12 +514,14 @@ int unenroll_from_course(int student_id, int course_id) {
 			}
 			lseek(fd2, -1 * sizeof(temp), SEEK_CUR);
 			int write_stat = write(fd2, &temp, sizeof(temp));
+			setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 	return 1;
 }
@@ -447,10 +533,13 @@ void unenroll_from_course_helper(int student_id, int course_id) {
 		perror("Opening Failed");
 		return;
 	}
+	struct flock lock;
 	while (1) {
 		struct Student temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return;
 		} else if (temp.stud_id == student_id) {
 			for (int i = 0; i < temp.num_courses; i++) {
@@ -466,12 +555,14 @@ void unenroll_from_course_helper(int student_id, int course_id) {
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 						
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}	
 	
 	return;
@@ -485,10 +576,13 @@ int unlist_course(int fac_id, int course_id) {
 		perror("Opening Failed");
 		return -1;
 	}
+	struct flock lock;
 	while (1) {
 		struct Faculty temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.fac_id == fac_id) {
 			for (int i = 0; i < temp.num_courses; i++) {
@@ -504,12 +598,14 @@ int unlist_course(int fac_id, int course_id) {
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 						
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}	
 	
 	return 1;
@@ -525,22 +621,27 @@ void increment_fac_courses(int fac_id) {
 		perror("Opening Failed");
 		return;
 	}
+	struct flock lock;
 	while (1) {
 		struct Faculty temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return;
 		} else if (temp.fac_id == fac_id) {
 			temp.num_courses++;
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 						
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}	
 	
 	return;
@@ -553,11 +654,13 @@ int del_course(int course_id) {
 		perror("Opening Failed");
 		return -1;
 	}	
-	
+	struct flock lock;
 	while(1) {
 		struct Course temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 		} else if (temp.course_id == course_id) {
 			temp.course_status = 0;
@@ -571,12 +674,14 @@ int del_course(int course_id) {
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 			
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 	
 	close(fd);
@@ -589,8 +694,10 @@ int del_course(int course_id) {
 	
 	while(1) {
 		struct Faculty fac;
+		setlock(lock, fd2, F_WRLCK, SEEK_CUR, 0, sizeof(fac));
 		int read_stat = read(fd, &fac, sizeof(fac));
 		if (read_stat == 0) {
+			setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(fac));
 			return -1;
 		} else {
 			for(int i = 0; i < fac.num_courses; i++) {
@@ -604,6 +711,7 @@ int del_course(int course_id) {
 					lseek(fd, -1 * (sizeof(fac)), SEEK_CUR);
 					
 					int write_stat = write(fd, &fac, sizeof(fac));
+					setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(fac));
 					if (write_stat < 0) {
 						perror("Writing Failed");
 						return -1;
@@ -611,9 +719,8 @@ int del_course(int course_id) {
 					break;
 				}
 			}
-			
-			
 		}
+		setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(fac));
 	}
 	
 	return 1;
@@ -626,25 +733,30 @@ int update_course_name(int course_id, char* new_name) {
 		return -1;
 	}
 
+	struct flock lock;
 	while (1) {
 		struct Course course;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(course));
 		int read_stat = read(fd, &course, sizeof(course));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
 			return -1;
 		} else if (course.course_id == course_id) {
 			strcpy(course.course_name, new_name);
-		}
 
-		lseek(fd, -1 * (sizeof(course)), SEEK_CUR);
-		int write_stat = write(fd, &course, sizeof(course));
-		if (write_stat < 0) {
-			perror("Writing Failed");
-			return -1;
+			lseek(fd, -1 * (sizeof(course)), SEEK_CUR);
+			int write_stat = write(fd, &course, sizeof(course));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
+			if (write_stat < 0) {
+				perror("Writing Failed");
+				return -1;
+			}
+			break;
 		}
-		break;
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
 	}
 
-	return 0;
+	return 1;
 }
 
 int update_course_intake(int course_id, int new_intake) {
@@ -653,11 +765,13 @@ int update_course_intake(int course_id, int new_intake) {
 		perror("Opening Failed");
 		return -1;
 	}
-
+	struct flock lock;
 	while (1) {
 		struct Course course;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(course));
 		int read_stat = read(fd, &course, sizeof(course));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
 			return -1;
 		} else if (course.course_id == course_id) {
 			int old_enrolled = course.enroll_count;
@@ -674,13 +788,14 @@ int update_course_intake(int course_id, int new_intake) {
 			}
 			lseek(fd, -1 * sizeof(course), SEEK_CUR);
 			int write_stat = write(fd, &course, sizeof(course));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}		
 			break;
 		}
-
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
 	}
 
 	return 1;
@@ -692,11 +807,13 @@ int change_fac_password(int fac_id, char* new_pass) {
 		perror("Opening Failed");
 		return -1;
 	}
-	
+	struct flock lock;
 	while (1) {
 		struct Faculty temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 			
 		}
@@ -704,12 +821,14 @@ int change_fac_password(int fac_id, char* new_pass) {
 			strcpy(temp.password, new_pass);
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 	
 	return 1;
@@ -722,11 +841,13 @@ int change_stud_password(int stud_id, char* new_pass) {
 		perror("Opening Failed");
 		return -1;
 	}
-	
+	struct flock lock;
 	while (1) {
 		struct Student temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
 		int read_stat = read(fd, &temp, sizeof(temp));
 		if (read_stat == 0) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			return -1;
 			
 		}
@@ -734,12 +855,14 @@ int change_stud_password(int stud_id, char* new_pass) {
 			strcpy(temp.password, new_pass);
 			lseek(fd, -1 * (sizeof(temp)), SEEK_CUR);
 			int write_stat = write(fd, &temp, sizeof(temp));
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
 			}
 			break;
 		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 	}
 	
 	return 1;
@@ -1015,17 +1138,22 @@ int main(void) {
 					for (int i = 0; i < 150; i++) {
 						enrollees[i] = -1;
 					}
+					struct flock lock;
 					while (1) {
 						struct Course temp;
+						setlock(lock, fd, F_RDLCK, SEEK_CUR, 0, sizeof(temp));
 						int read_stat = read(fd, &temp, sizeof(temp));
 						if (read_stat == 0) {
+							setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 							break;
 						} else if (temp.course_id == co_id) {
 							for (int k = 0; k < 150; k++) {
 								enrollees[k] = temp.enrolled[k];
 							}
+							setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 							break;
 						}
+						setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 					}
 					
 					send_stat = send(client, enrollees, sizeof(enrollees), 0);
@@ -1136,17 +1264,22 @@ int main(void) {
 					for (int i = 0; i < 80; i++) {
 						enrolled_c[i] = -1;
 					}
+					struct flock lock;
 					while (1) {
 						struct Student temp;
+						setlock(lock, fd2, F_RDLCK, SEEK_CUR, 0, sizeof(temp));
 						int read_stat = read(fd2, &temp, sizeof(temp));
 						if (read_stat == 0) {
+							setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 							break;
 						} else if (temp.stud_id == login_token.userid) {
 							for (int k = 0; k < 80; k++) {
 								enrolled_c[k] = temp.courses[k];
 							}
+							setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 							break;
 						}
+						setlock(lock, fd2, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 					}
 					send_stat = send(client, enrolled_c, sizeof(enrolled_c), 0);
 					if (send_stat < 0) {
