@@ -110,7 +110,7 @@ int main(void) {
 						student.courses[i] = -1;
 					}
 					student.activity_stat = 0;
-					strcpy(student.password, "");
+					strcpy(student.password, "student");
 					send_stat = send(client, &student, sizeof(student), 0);
 					if (send_stat < 0) {
 						perror("Sending Failed");
@@ -152,7 +152,7 @@ int main(void) {
 					for (int i = 0; i < 80; i++) {
 						faculty.courses[i] = -1;
 					}
-					strcpy(faculty.password, "");
+					strcpy(faculty.password, "faculty");
 					
 					send_stat = send(client, &faculty, sizeof(faculty), 0);
 					if (send_stat < 0) {
@@ -437,6 +437,7 @@ int main(void) {
 				} else if (fac_choice == 4) {
 					
 					char new_pass[80];
+					while(getchar()!='\n');
 					printf("Enter New Password- ");
 					scanf("%[^\n]", new_pass);
 					
@@ -462,6 +463,7 @@ int main(void) {
 					
 				} else if (fac_choice == 5) {
 					int course_id;
+					while(getchar() != '\n');
 					printf("Enter the ID of the Course to be updated- ");
 					scanf("%d", &course_id);
 					send_stat = send(client, &course_id, sizeof(course_id), 0);
@@ -478,21 +480,26 @@ int main(void) {
 					printf("3. Exit Menu \n");
 					printf("Enter your choice- ");
 					scanf("%d", &course_update_choice);
+					while(getchar() != '\n');
 					send_stat = send(client, &course_update_choice, sizeof(course_update_choice), 0);
 					if (send_stat < 0) {
 						perror("Sending Failed");
 						return -1;
 					}
+					printf("Update choice: %d\n", course_update_choice);
 					char updated_course[80];
 					if (course_update_choice == 1) {
+						// while(getchar()!= '\n');
 						printf("Enter updated name- ");
-						while(getchar()!= '\n');
-						scanf("%[^\n]", updated_course);
+						// printf("I am here\n");
+						scanf("%s", updated_course);
+						printf("I got what you want\n");
 						send_stat = send(client, updated_course, sizeof(updated_course), 0);
 						if (send_stat < 0) {
 							perror("Sending Failed");
 							return -1;
 						}
+						printf("I sent that\n");
 					} else if (course_update_choice == 2) {
 						int updated_intake;
 						printf("Enter updated Intake- ");
@@ -620,6 +627,7 @@ int main(void) {
 				} else if (stud_choice == 4) {
 					
 					char s_new_pass[80];
+					while(getchar()!='\n');
 					printf("Enter New Password- ");
 					scanf("%[^\n]", s_new_pass);
 					

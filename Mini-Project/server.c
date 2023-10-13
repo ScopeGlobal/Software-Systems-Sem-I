@@ -85,6 +85,9 @@ char login(struct LoginToken login_token) {
 				setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 				return 'x';
 			}
+			if (temp.stud_id == login_token.userid) {
+				printf("Student %s", temp.password);
+			}
 			if (temp.stud_id == login_token.userid && strcmp(temp.password, login_token.password) == 0) {
 				setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
 				return 's';
@@ -732,21 +735,33 @@ int update_course_name(int course_id, char* new_name) {
 		perror("Opening Failed");
 		return -1;
 	}
-
+	printf("Course id: %d\n", course_id);
+	printf("Course name: %s\n", new_name);
 	struct flock lock;
 	while (1) {
 		struct Course course;
 		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(course));
 		int read_stat = read(fd, &course, sizeof(course));
+		
+		if(read_stat != 0) {
+			printf("Current course id: %d\n", course.course_id);
+		}
+
 		if (read_stat == 0) {
+			printf("Ran out of courses\n");
 			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
 			return -1;
 		} else if (course.course_id == course_id) {
+			printf("Copying new name\n");
 			strcpy(course.course_name, new_name);
+			printf("Done copying new name\n");
 
 			lseek(fd, -1 * (sizeof(course)), SEEK_CUR);
+			printf("Done seeking\n");
 			int write_stat = write(fd, &course, sizeof(course));
+			printf("Done writing\n");
 			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
+			printf("Done unlocking\n");
 			if (write_stat < 0) {
 				perror("Writing Failed");
 				return -1;
@@ -755,7 +770,7 @@ int update_course_name(int course_id, char* new_name) {
 		}
 		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(course));
 	}
-
+	printf("*Done updating\n");
 	return 1;
 }
 
@@ -1190,17 +1205,21 @@ int main(void) {
 						perror("Receiving Failed");
 						return -1;
 					}
-					
+					printf("I am here\n");
+					printf("Course choice: %d\n", course_update_choice);
 					int update_stat;
 					if (course_update_choice == 1) {
+						printf("In update course\n");
 						char updated_name[80];
 						rec_stat = recv(client, updated_name, sizeof(updated_name), 0);
+						printf("Received data\n");
 						if (rec_stat < 0) {
 							perror("Receiving Failed");
 							return -1;
 						}
 						update_stat = update_course_name(course_id, updated_name);
-						printf("Updated Name %s", updated_name);	
+
+						// printf("Updated Name %s", updated_name);	
 					} else if (course_update_choice == 2) {
 						int updated_intake;
 						rec_stat = recv(client, &updated_intake, sizeof(updated_intake), 0);
@@ -1212,6 +1231,11 @@ int main(void) {
 						printf("Updated Intake %d", updated_intake);
 					} else {
 						continue;
+					}
+					send_stat = send(client, &update_stat, sizeof(update_stat), 0);
+					if (send_stat < 0) {
+						perror("Sending Failed");
+						return -1;
 					}
 				} else {
 					break;
