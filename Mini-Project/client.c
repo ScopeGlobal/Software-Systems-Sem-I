@@ -585,13 +585,16 @@ int main(void) {
 					scanf("%d", &unen_id);
 					
 					send_stat = send(client, &unen_id, sizeof(unen_id), 0);
+					printf("Sent id %d\n", unen_id);
 					if (send_stat < 0) {
 						perror("Sending Failed");
 						return -1;
 					}
 					
 					int cunen_stat;
+					printf("Waiting to receive response\n");
 					rec_stat = recv(client, &cunen_stat, sizeof(cunen_stat), 0);
+					printf("Response received: %d\n", rec_stat);
 					if (rec_stat < 0) {
 						perror("Receiving Failed");
 						return -1;
