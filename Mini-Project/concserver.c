@@ -69,9 +69,106 @@ void setlock(struct flock lock, int fd, int l_type, int l_whence, int l_start, i
 
 }
 
-char login(struct LoginToken login_token) {
+int add_student(struct Student student) {
+
+	int fd = open("student.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	int end_file = 0;
+	struct flock lock;
+	while (1) {
+		struct Student temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			break;
+		} else if (temp.stud_id == student.stud_id) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
+			return -1;
+		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
+	}
 	
-	if (login_token.choice == 3) {
+	int write_stat = write(fd, &student, sizeof(student));
+	if (write_stat < 0) {
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(student));
+		return -1;
+	} else {
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(student));
+		return 1;
+	}
+	
+}
+
+int add_faculty(struct Faculty faculty) {
+
+	int fd = open("faculty.txt", O_RDWR);
+	if (fd < 0) {
+		perror("Opening Failed");
+		return -1;
+	}
+	int end_file = 0;
+	struct flock lock;
+	while (1) {
+		struct Faculty temp;
+		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
+		int read_stat = read(fd, &temp, sizeof(temp));
+		if (read_stat == 0) {
+			break;
+		} else if (temp.fac_id == faculty.fac_id) {
+			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
+			return -1;
+		}
+		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
+	}
+	
+	int write_stat = write(fd, &faculty, sizeof(faculty));
+	setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(faculty));
+	if (write_stat < 0) {
+		return -1;
+	} else {
+		return 1;
+	}
+
+}
+
+char login(struct LoginToken login_token) {
+
+	if (login_token.choice == 1) {
+		struct Student student;
+		student.stud_id = login_token.userid;
+		strcpy(student.password, login_token.password);
+		strcpy(student.email, "example@example.com");
+		student.activity_stat = 1;
+		student.num_courses = 0;
+		for (int i = 0; i < 80; i++) {
+			student.courses[i] = -1;
+		}
+
+		int add_stat = add_student(student);
+		if (add_stat < 0) {
+			return 'x';
+		} else {
+			return 'c';
+		}
+	} else if (login_token.choice == 2) {
+		struct Faculty faculty;
+		faculty.fac_id = login_token.userid;
+		strcpy(faculty.password, login_token.password);
+		strcpy(faculty.email, "example@example.com");
+		faculty.num_courses = 0;
+		for (int i = 0; i < 80; i++) {
+			faculty.courses[i] = -1;
+		}
+		int add_stat = add_faculty(faculty);
+		if (add_stat < 0) {
+			return 'x';
+		} else {
+			return 'c';
+		}
+	} else if (login_token.choice == 3) {
 		int fd = open("student.txt", O_RDWR);
 		if (fd < 0) {
 			perror("Opening Failed");
@@ -147,70 +244,6 @@ char login(struct LoginToken login_token) {
 	
 }
 
-int add_student(struct Student student) {
-
-	int fd = open("student.txt", O_RDWR);
-	if (fd < 0) {
-		perror("Opening Failed");
-		return -1;
-	}
-	int end_file = 0;
-	struct flock lock;
-	while (1) {
-		struct Student temp;
-		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
-		int read_stat = read(fd, &temp, sizeof(temp));
-		if (read_stat == 0) {
-			break;
-		} else if (temp.stud_id == student.stud_id) {
-			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
-			return -1;
-		}
-		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
-	}
-	
-	int write_stat = write(fd, &student, sizeof(student));
-	if (write_stat < 0) {
-		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(student));
-		return -1;
-	} else {
-		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(student));
-		return 1;
-	}
-	
-}
-
-int add_faculty(struct Faculty faculty) {
-
-	int fd = open("faculty.txt", O_RDWR);
-	if (fd < 0) {
-		perror("Opening Failed");
-		return -1;
-	}
-	int end_file = 0;
-	struct flock lock;
-	while (1) {
-		struct Faculty temp;
-		setlock(lock, fd, F_WRLCK, SEEK_CUR, 0, sizeof(temp));
-		int read_stat = read(fd, &temp, sizeof(temp));
-		if (read_stat == 0) {
-			break;
-		} else if (temp.fac_id == faculty.fac_id) {
-			setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
-			return -1;
-		}
-		setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(temp));
-	}
-	
-	int write_stat = write(fd, &faculty, sizeof(faculty));
-	setlock(lock, fd, F_UNLCK, SEEK_CUR, 0, sizeof(faculty));
-	if (write_stat < 0) {
-		return -1;
-	} else {
-		return 1;
-	}
-
-}
 
 int add_course(int fac_id, struct Course course) {
 
@@ -1306,7 +1339,9 @@ int handle_client(int client) {
 				}
 			}
 			break;
-		
+		case 'c':
+			printf("Account created Successfully!");
+			break;
 		default:
 			printf("Auth Failed \n");
 			break;		

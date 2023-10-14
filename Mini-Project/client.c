@@ -660,6 +660,9 @@ int main(void) {
 							
 			}
 			break;
+		case 'c':
+			printf("Account Created Successfully!");
+			break;
 		default:
 			printf("Auth failed! \n");	
 			break;
