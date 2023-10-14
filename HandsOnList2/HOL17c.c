@@ -1,3 +1,13 @@
+ /*
+============================================================================
+Name : HOL17c.c
+Author : Sridhar Menon
+Description : Write a program to execute ls -l | wc.
+ a. use fcntl
+Date: 6th Oct, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>

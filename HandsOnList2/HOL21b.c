@@ -1,3 +1,13 @@
+  /*
+============================================================================
+Name : HOL21.c
+Author : Sridhar Menon
+Description :  Write two programs so that both can communicate by FIFO -Use two way communication.
+
+Date: 6th Oct, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<fcntl.h>

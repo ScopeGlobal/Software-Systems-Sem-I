@@ -1,3 +1,17 @@
+/*
+============================================================================
+Name : HOL30.c
+Author : Sridhar Menon
+Description :   Write a program to create a shared memory.
+ a. write some data to the shared memory
+ b. attach with O_RDONLY and check whether you are able to overwrite.
+ c. detach the shared memory
+ d. remove the shared memory
+
+Date: 13th Oct, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>

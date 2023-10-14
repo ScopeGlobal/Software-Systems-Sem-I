@@ -1,3 +1,14 @@
+/*
+============================================================================
+Name : HOL27a.c
+Author : Sridhar Menon
+Description :   Write a program to receive messages from the message queue.
+ a. with 0 as a flag
+
+Date: 7th Oct, 2023.
+============================================================================
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>

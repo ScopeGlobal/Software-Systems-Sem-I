@@ -1,15 +1,15 @@
 /*
 ============================================================================
-Name : HOL17a.c
+Name : HOL32w.c
 Author : Sridhar Menon
-Description : . Write a program to simulate online ticket reservation. Implement write lock 
-Write a program to open a file, store a ticket number and exit. Write a separate program, to 
-open the file, implement write lock, read the ticket number, increment the number and print 
-the new ticket number then close the file.
+Description :   Write a program to implement semaphore to protect any critical section.
+ a. rewrite the ticket number creation program using semaphore
+ b. protect shared memory from concurrent write access
+ c. protect multiple pseudo resources ( may be two) using counting semaphore
+ d. remove the created semaphore 
 
-Adding records
 
-Date: 24th Aug, 2023.
+Date: 13th Oct, 2023.
 ============================================================================
 */
 

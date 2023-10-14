@@ -1,3 +1,12 @@
+ /*
+============================================================================
+Name : HOL15.c
+Author : Sridhar Menon
+Description :   Write a simple program to send some data from parent to the child process.
+Date: 6th Oct, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>

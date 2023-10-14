@@ -1,3 +1,13 @@
+/*
+============================================================================
+Name : HOL26.c
+Author : Sridhar Menon
+Description :  Write a program to send messages to the message queue. Check $ipcs -q
+
+Date: 7th Oct, 2023.
+============================================================================
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>

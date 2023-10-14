@@ -1,3 +1,13 @@
+/*
+============================================================================
+Name : HOL33s.c
+Author : Sridhar Menon
+Description :   Write a program to communicate between two machines using socket.
+
+Date: 13th Oct, 2023.
+============================================================================
+*/
+
 #include<stdlib.h>
 #include<stdio.h>
 #include<unistd.h>

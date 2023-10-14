@@ -1,3 +1,13 @@
+/*
+============================================================================
+Name : HOL29.c
+Author : Sridhar Menon
+Description :   Write a program to remove the message queue.
+
+Date: 7th Oct, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>

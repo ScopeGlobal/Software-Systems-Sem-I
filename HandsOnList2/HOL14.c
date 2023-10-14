@@ -1,3 +1,13 @@
+/*
+============================================================================
+Name : HOL14.c
+Author : Sridhar Menon
+Description :  Write a simple program to create a pipe, write to the pipe, read from pipe and display on 
+the monitor.
+Date: 6th Oct, 2023.
+============================================================================
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
